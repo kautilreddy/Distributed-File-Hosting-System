@@ -1,0 +1,32 @@
+Project 1 clarification
+Posted on: Monday, February 18, 2019 3:55:39 PM CST
+
+Dear all,
+
+Consider this project as having two phases:
+Phase one: Entering critical section
+Phase two: Performing read/write operations on servers
+
+Phase one: it does not concern any server, it is just between clients.
+Each client upon requesting a file operations, regardless of the write or the read operation, sends its request
+to other four clients, and waits for their replies. Each client upon receiving a request, sends its reply to the
+requesting client if:
+i) it has no request to send, or
+ii) its own request has higher timestamp than the received request.
+The requester client can enter its critical section when it receives all four replies.
+Upon entering its critical section, it will not send any reply to any other clients, and will keep them in a queue,
+and when it exits its critical section, it sends all delayed replies to their requesters.
+
+Phase two: it is the critical section part of each client. Each client upon entering its critical section,
+send its operation to all three servers. Each server upon receiving an operation request from a client, performs the
+requested operation and sends an appropriate message to the requester client, should it finishes the operation.
+The client upon receiving all three messages from three clients, will exit its critical section and if it has
+delayed any reply to the requests of other clients, it will send them.
+For the first phase, there is an optimization which is mentioned in the slides,
+which explains some cases in which there is no need to send the request to all four other clients.
+You are required to implement the optimization as well.
+If you have any other questions or doubts, let me know or come to my office hours so we can discuss about them.
+
+Best,
+
+Aliehsan
