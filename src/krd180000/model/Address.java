@@ -1,4 +1,4 @@
-package krd180000;
+package krd180000.model;
 
 public class Address {
     private String ip;

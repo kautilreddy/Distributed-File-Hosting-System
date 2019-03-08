@@ -1,16 +1,20 @@
 package krd180000.client;
 
 import krd180000.Lock;
+import krd180000.model.Message;
+import krd180000.model.MessageType;
 
 public class RequestHandler extends Thread{
+    private final MessageHandler messageHandler;
     private Message message;
     private MutExRunner mutExRunner;
     private boolean deferIt;
 
-    public RequestHandler(Message message,MutExRunner mutExRunner) {
+    public RequestHandler(Message message,MutExRunner mutExRunner,MessageHandler messageHandler) {
         this.message = message;
         this.mutExRunner = mutExRunner;
         this.deferIt = false;
+        this.messageHandler = messageHandler;
     }
 
     @Override
@@ -29,10 +33,15 @@ public class RequestHandler extends Thread{
             }
             if(!deferIt){
                 //send reply to processId
+                messageHandler.sendReply(mutExRunner.getMe(),processId);
             }
         }else {
             synchronized (Lock.getLockObject()){
-                mutExRunner.setOutstandingReplyCount(mutExRunner.getOutstandingReplyCount()-1);
+                int getOutstandingReplyCount = mutExRunner.getOutstandingReplyCount();
+                mutExRunner.setOutstandingReplyCount(getOutstandingReplyCount-1);
+                if(mutExRunner.getOutstandingReplyCount()==0){
+                    notify();
+                }
             }
         }
     }

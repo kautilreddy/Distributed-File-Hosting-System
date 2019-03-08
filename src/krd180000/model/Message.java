@@ -1,4 +1,4 @@
-package krd180000.client;
+package krd180000.model;
 
 public class Message {
     private MessageType type;
@@ -9,6 +9,9 @@ public class Message {
         this.type = type;
         this.sequenceNumber = sequenceNumber;
         this.fromProcess = fromProcess;
+    }
+    public Message(MessageType type,int fromProcess){
+        this(type,-1,fromProcess);
     }
 
     public MessageType getType() {
@@ -36,7 +39,3 @@ public class Message {
     }
 }
 
-enum MessageType{
-    Request,
-    Reply
-}

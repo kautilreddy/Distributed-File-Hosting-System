@@ -7,7 +7,8 @@ import java.net.ServerSocket;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-class MutExRunner{
+public class MutExRunner{
+    private MessageHandler messageHandler;
     private int me;
     private int N;
     private int sequenceNumber;
@@ -18,7 +19,7 @@ class MutExRunner{
     private Runnable criticalSection;
     private BlockingQueue<String> toSend;
     private ServerSocket serverSocket;
-    public MutExRunner(int me, int n, int port) throws IOException {
+    public MutExRunner(int me, int n, int port,MessageHandler messageHandler) throws IOException {
         this.me = me;
         N = n;
         sequenceNumber = 0;
@@ -26,6 +27,7 @@ class MutExRunner{
         this.toSend = new LinkedBlockingQueue<String>();
         this.serverSocket = new ServerSocket(port);
         this.deferredReply = new boolean[N];
+        this.messageHandler = messageHandler;
     }
 
     public void run() throws InterruptedException {
