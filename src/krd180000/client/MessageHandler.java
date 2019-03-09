@@ -31,10 +31,12 @@ public class MessageHandler {
         }
     }
     public void sendReply(int fromProcess,int toProcess){
+        System.out.println("Sending reply to "+toProcess);
         sendMessage(toProcess,new Message(MessageType.Reply,fromProcess));
     }
 
     public void sendRequest(int fromProcess, int toProcess,int seqNumber){
+        System.out.println("Sending request to "+toProcess+" "+seqNumber);
         sendMessage(toProcess,new Message(MessageType.Request, seqNumber, fromProcess));
     }
 }

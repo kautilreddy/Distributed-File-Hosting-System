@@ -20,6 +20,7 @@ public class RequestHandler extends Thread{
     @Override
     public void run(){
         if(message.getType()== MessageType.Request){
+            System.out.println("Request from "+message.getFromProcess());
             int seqNum = message.getSequenceNumber();
             int processId = message.getFromProcess();
             int highestSequenceNumber = Math.max(mutExRunner.getHighestSequenceNumber(),seqNum);
@@ -28,6 +29,7 @@ public class RequestHandler extends Thread{
                 deferIt = mutExRunner.isRequestingCriticalSection()
                         &&((seqNum>mutExRunner.getSequenceNumber())||(seqNum==mutExRunner.getSequenceNumber()&&processId>mutExRunner.getMe()));
                 if(deferIt){
+                    System.out.println("deferred request from = " + message.getFromProcess());
                     mutExRunner.isDeferredReply()[processId] = true;
                 }
             }
@@ -36,9 +38,11 @@ public class RequestHandler extends Thread{
                 messageHandler.sendReply(mutExRunner.getMe(),processId);
             }
         }else {
+            System.out.println("Reply from "+message.getFromProcess());
             synchronized (Lock.getLockObject()){
                 int getOutstandingReplyCount = mutExRunner.getOutstandingReplyCount();
                 mutExRunner.setOutstandingReplyCount(getOutstandingReplyCount-1);
+                System.out.println("getOutstandingReplyCount = " + (getOutstandingReplyCount-1));
 //                if(mutExRunner.getOutstandingReplyCount()==0){
                     Lock.getLockObject().notifyAll();
 //                }

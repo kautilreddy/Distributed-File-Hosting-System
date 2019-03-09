@@ -41,7 +41,7 @@ public class MutExRunner{
             }
         }
         synchronized (Lock.getLockObject()) {
-            while (outstandingReplyCount == 0) {
+            while (outstandingReplyCount != 0) {
                 Lock.getLockObject().wait();//wait until outstandingReplyCount = 0
             }
         }

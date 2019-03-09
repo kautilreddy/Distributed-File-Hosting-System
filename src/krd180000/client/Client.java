@@ -30,13 +30,8 @@ public class Client implements Runnable{
 
     @Override
     public void run(){
-//        if(clientId!=1){
-            Scanner in = new Scanner(System.in);
-            String is = in.nextLine();
-//            return;
-        //}
         try {
-            Thread.sleep(3000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -44,6 +39,11 @@ public class Client implements Runnable{
             try {
                 mutExRunner.execute(()->{
                     System.out.println(clientId+" is in critical section @"+System.currentTimeMillis());
+                    try {
+                        Thread.sleep(1123);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 });
 //                Thread.sleep(1000);
             } catch (InterruptedException e) {
