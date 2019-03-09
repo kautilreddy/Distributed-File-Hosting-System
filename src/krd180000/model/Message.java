@@ -1,6 +1,8 @@
 package krd180000.model;
 
-public class Message {
+import java.io.Serializable;
+
+public class Message implements Serializable {
     private MessageType type;
     private int sequenceNumber;
     private int fromProcess;

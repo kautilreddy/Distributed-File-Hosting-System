@@ -2,10 +2,11 @@ package krd180000.client;
 
 import krd180000.model.Address;
 
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.InputStream;
+import java.net.*;
+import java.util.Properties;
 import java.util.Scanner;
 
 public class Client implements Runnable{
@@ -14,59 +15,82 @@ public class Client implements Runnable{
     private static final int TOTAL_SERVERS = 3;
     private int port;
     private int clientId;
-    private List<Socket> otherClients;
-    private List<Socket> servers;
     private MutExRunner mutExRunner;
     private SocketReceiver receiver;
+
     public Client(int clientId,int totalClients,Address[] clientIps) throws IOException {
         this.clientId = clientId;
         this.totalClients = totalClients;
-        this.otherClients = new ArrayList<Socket>(totalClients-1);
-        this.servers = new ArrayList<Socket>(TOTAL_SERVERS);
         this.messageHandler = new MessageHandler(clientIps);
+        this.port = clientIps[clientId].getPort();
         this.mutExRunner = new MutExRunner(clientId,totalClients,port,messageHandler);
         this.receiver = new SocketReceiver(mutExRunner,port,messageHandler);
+        receiver.start();
     }
 
     @Override
     public void run(){
-        receiver.start();
-//        establishSockets(clientIps,serverIps);
-
-    }
-
-    private void establishSockets(List<Address> clientIps,List<Address> serverIPs) {
-        for (Address address: clientIps) {
-            otherClients.add(new Socket());
+//        if(clientId!=1){
+            Scanner in = new Scanner(System.in);
+            String is = in.nextLine();
+//            return;
+        //}
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        for (int i = 0; i < 10; i++) {
+            try {
+                mutExRunner.execute(()->{
+                    System.out.println(clientId+" is in critical section @"+System.currentTimeMillis());
+                });
+//                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public static void main(String[] args) throws IOException {
-        if(args.length<2){
-            System.out.println("Pass the client id and total number of clients");
-            return;
-        }
-        System.out.println("Client started");
-        System.out.println("Address is : ");
-        int totalClients = Integer.valueOf(args[1]);
-        int currentClientId = Integer.valueOf(args[0]);
-        Address[] clientIps = getIPs("Enter the ip of the client ",currentClientId,totalClients, true);
-        Address[] serverIps = getIPs("Enter the ip of the servers ",currentClientId,TOTAL_SERVERS, false);
+        System.out.println("Client has started");
+        System.out.println("Address is : "+getMyIp());
+        Properties properties = readProperties();
+        int totalClients = Integer.parseInt(properties.getProperty("totalClients"));
+        int currentClientId = Integer.parseInt(properties.getProperty("currentClientId"));
+        Address[] clientIps = getIPs(properties,"client",totalClients,currentClientId);
         Client client = new Client(currentClientId,totalClients,clientIps);
         new Thread(client).start();
     }
-    private static Address[] getIPs(String prompt, int currentClientId, int count, boolean clientPrompt){
-        Address[] ips = new Address[count];
+    public static Properties readProperties(){
+        Properties prop = new Properties();
         Scanner in = new Scanner(System.in);
-        for (int i = 0; i < count; i++) {
-            if(i==currentClientId&&clientPrompt) {
-                ips[i] = null;
-                continue;
-            }
-            System.out.println(prompt + i);
-            Address address = new Address(in.nextLine(), in.nextInt());
+        InputStream is = null;
+        String fileName = in.nextLine();
+        try {
+            is = new FileInputStream(fileName);
+            prop.load(is);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        return prop;
+    }
+    public static String getMyIp(){
+        String ip;
+        try(final DatagramSocket socket = new DatagramSocket()){
+            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+            ip = socket.getLocalAddress().getHostAddress();
+        }catch (SocketException | UnknownHostException e){
+            throw new RuntimeException(e);
+        }
+        return ip;
+    }
+    private static Address[] getIPs(Properties properties,String keyPrefix,int totalCount,int currentId){
+        Address[] ips = new Address[totalCount+1];
+        for (int i = 1; i <= totalCount; i++) {
+            int port = Integer.parseInt(properties.getProperty(keyPrefix+i+"_port"));
+            Address address = new Address(properties.getProperty(keyPrefix+i+"_ip"), port);
             ips[i] = address;
-
         }
         return ips;
     }

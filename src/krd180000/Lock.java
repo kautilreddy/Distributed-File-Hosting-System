@@ -6,7 +6,7 @@ public class Lock {
         lock = new Object();
     }
 
-    public static synchronized Object getLockObject(){
+    public static Object getLockObject(){
         return lock;
     }
 }

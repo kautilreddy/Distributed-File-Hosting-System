@@ -20,14 +20,14 @@ public class MessageHandler {
         Socket socket=null;
         try {
             socket = new Socket(addresses[toProcess].getIp(),addresses[toProcess].getPort());
-            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+            OutputStream outputStream = socket.getOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(outputStream);
             oos.writeObject(message);
-            socket.getOutputStream();
+            //socket.getOutputStream();
             socket.close();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
     public void sendReply(int fromProcess,int toProcess){

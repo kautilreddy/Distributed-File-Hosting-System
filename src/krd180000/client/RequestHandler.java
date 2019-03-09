@@ -39,9 +39,9 @@ public class RequestHandler extends Thread{
             synchronized (Lock.getLockObject()){
                 int getOutstandingReplyCount = mutExRunner.getOutstandingReplyCount();
                 mutExRunner.setOutstandingReplyCount(getOutstandingReplyCount-1);
-                if(mutExRunner.getOutstandingReplyCount()==0){
-                    notify();
-                }
+//                if(mutExRunner.getOutstandingReplyCount()==0){
+                    Lock.getLockObject().notifyAll();
+//                }
             }
         }
     }
