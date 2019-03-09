@@ -30,6 +30,9 @@ public class Client implements Runnable{
 
     @Override
     public void run(){
+        if(clientId==3){
+            return;
+        }
         try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {

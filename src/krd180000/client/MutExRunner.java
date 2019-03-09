@@ -3,9 +3,7 @@ package krd180000.client;
 import krd180000.Lock;
 
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Arrays;
 
 public class MutExRunner{
     private MessageHandler messageHandler;
@@ -16,15 +14,16 @@ public class MutExRunner{
     private int outstandingReplyCount;
     private boolean requestingCriticalSection;
     private boolean[] deferredReply;
-    private BlockingQueue<String> toSend;
+    private boolean[] shouldIRequest;
     public MutExRunner(int me, int n, int port,MessageHandler messageHandler) throws IOException {
         this.me = me;
         N = n;
         sequenceNumber = 0;
         highestSequenceNumber = 0;
-        this.toSend = new LinkedBlockingQueue<String>();
 //        this.serverSocket = new ServerSocket(port);
         this.deferredReply = new boolean[N+1];
+        this.shouldIRequest = new boolean[N+1];
+        Arrays.fill(shouldIRequest,true);
         this.messageHandler = messageHandler;
     }
 
@@ -37,6 +36,13 @@ public class MutExRunner{
         for (int i = 1; i <= N; i++) {
             if(i!=me){
                 //send request message to i
+                synchronized (Lock.getLockObject()){
+                    if(!shouldIRequest[i]){
+                        //the Roucairol-Carvalho optimization
+                        --outstandingReplyCount;
+                        continue;
+                    }
+                }
                 messageHandler.sendRequest(me,i,sequenceNumber);
             }
         }
@@ -54,10 +60,18 @@ public class MutExRunner{
                 if(deferredReply[i]){
                     deferredReply[i] = false;
                     //send reply message to i
-                    messageHandler.sendReply(me,i);
+                    sendReplyAndMarkAsSent(i);
                 }
             }
         }
+    }
+
+    public void sendReplyAndMarkAsSent(int toProcess){
+        //marking that a reply was sent to this node (part of the Roucairol-Carvalho optimization)
+        synchronized (Lock.getLockObject()){
+            shouldIRequest[toProcess] = true;
+        }
+        messageHandler.sendReply(me,toProcess);
     }
 
     public int getHighestSequenceNumber() {
@@ -90,5 +104,13 @@ public class MutExRunner{
 
     public boolean[] isDeferredReply() {
         return deferredReply;
+    }
+
+    public boolean[] getShouldIRequest() {
+        return shouldIRequest;
+    }
+
+    public void setShouldIRequest(boolean[] shouldIRequest) {
+        this.shouldIRequest = shouldIRequest;
     }
 }

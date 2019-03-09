@@ -35,11 +35,12 @@ public class RequestHandler extends Thread{
             }
             if(!deferIt){
                 //send reply to processId
-                messageHandler.sendReply(mutExRunner.getMe(),processId);
+                mutExRunner.sendReplyAndMarkAsSent(processId);
             }
         }else {
             System.out.println("Reply from "+message.getFromProcess());
             synchronized (Lock.getLockObject()){
+                mutExRunner.getShouldIRequest()[message.getFromProcess()] = false;
                 int getOutstandingReplyCount = mutExRunner.getOutstandingReplyCount();
                 mutExRunner.setOutstandingReplyCount(getOutstandingReplyCount-1);
                 System.out.println("getOutstandingReplyCount = " + (getOutstandingReplyCount-1));
