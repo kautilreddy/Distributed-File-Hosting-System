@@ -1,13 +1,11 @@
 package krd180000.client;
 
+import krd180000.common.PropertyReader;
 import krd180000.model.Address;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.*;
 import java.util.Properties;
-import java.util.Scanner;
 
 public class Client implements Runnable{
     private MessageHandler messageHandler;
@@ -58,26 +56,14 @@ public class Client implements Runnable{
     public static void main(String[] args) throws IOException {
         System.out.println("Client has started");
         System.out.println("Address is : "+getMyIp());
-        Properties properties = readProperties();
+        Properties properties = PropertyReader.read();
         int totalClients = Integer.parseInt(properties.getProperty("totalClients"));
         int currentClientId = Integer.parseInt(properties.getProperty("currentClientId"));
         Address[] clientIps = getIPs(properties,"client",totalClients,currentClientId);
         Client client = new Client(currentClientId,totalClients,clientIps);
         new Thread(client).start();
     }
-    public static Properties readProperties(){
-        Properties prop = new Properties();
-        Scanner in = new Scanner(System.in);
-        InputStream is = null;
-        String fileName = in.nextLine();
-        try {
-            is = new FileInputStream(fileName);
-            prop.load(is);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-        return prop;
-    }
+
     public static String getMyIp(){
         String ip;
         try(final DatagramSocket socket = new DatagramSocket()){
