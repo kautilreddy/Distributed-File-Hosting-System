@@ -7,11 +7,9 @@ import java.util.Properties;
 import java.util.Scanner;
 
 public class PropertyReader {
-    public static Properties read(){
+    public static Properties read(String fileName){
         Properties prop = new Properties();
-        Scanner in = new Scanner(System.in);
         InputStream is = null;
-        String fileName = in.nextLine();
         try {
             is = new FileInputStream(fileName);
             prop.load(is);

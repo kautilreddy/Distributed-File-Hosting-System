@@ -8,14 +8,17 @@ import java.net.Socket;
 import java.util.Properties;
 
 public class Server extends Thread{
+    private final int serverNumber;
     private String storagePath;
     private ServerSocket serverSocket;
-    public Server(String storagePath,int port) throws IOException {
+    public Server(String storagePath, int port, int serverNumber) throws IOException {
         this.storagePath = storagePath;
         this.serverSocket = new ServerSocket(port);
+        this.serverNumber = serverNumber;
     }
     @Override
     public void run(){
+        System.out.println("Server "+serverNumber+" started");
         while (true){
             Socket socket;
             try {
@@ -29,8 +32,8 @@ public class Server extends Thread{
 
     public static void main(String[] args) throws IOException{
         int serverNumber = Integer.valueOf(args[0]);
-        Properties properties = PropertyReader.read();
+        Properties properties = PropertyReader.read("src/resources/server.properties");
         new Server(properties.getProperty("server"+serverNumber+"_storagePath")
-                ,Integer.parseInt(properties.getProperty("server"+serverNumber+"_port"))).start();
+                ,Integer.parseInt(properties.getProperty("server"+serverNumber+"_port")), serverNumber).start();
     }
 }

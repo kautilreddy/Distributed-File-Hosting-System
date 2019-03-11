@@ -26,9 +26,18 @@ public class ClientRequestHandler extends Thread {
             FileOpResult result = handler.handle(op);
             ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
             oos.writeObject(result);
-            socket.close();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
+        } finally {
+            if (socket != null)
+            {
+                try {
+                    socket.close();
+                }
+                catch (final IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

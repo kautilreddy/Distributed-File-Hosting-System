@@ -23,8 +23,9 @@ public class FileOpHandler {
         boolean status = false;
         if(op.getOperation()== FileOperation.Read){
             String lastLine = "";
+            BufferedReader br = null;
             try {
-                BufferedReader br = new BufferedReader(new FileReader(storagePath+op.getFileName()));
+                br = new BufferedReader(new FileReader(storagePath+"/"+op.getFileName()));
                 String sCurrentLine;
                 while ((sCurrentLine = br.readLine()) != null)
                 {
@@ -33,15 +34,24 @@ public class FileOpHandler {
                 status = true;
             }catch (IOException e){
                 e.printStackTrace();
+            }finally {
+                if(br!=null){
+                    br.close();
+                }
             }
             result = new FileOpResult(status,lastLine,null,FileOperation.Read);
         }else if (op.getOperation() == FileOperation.Write){
+            BufferedWriter bw=null;
             try {
-                BufferedWriter bw = new BufferedWriter(new FileWriter(storagePath + op.getFileName()));
+                bw = new BufferedWriter(new FileWriter(storagePath +"/"+ op.getFileName(),true));
                 bw.append(op.getAppendStr());
                 status = true;
             }catch (IOException e){
                 e.printStackTrace();
+            }finally {
+                if(bw!=null){
+                    bw.close();
+                }
             }
             result = new FileOpResult(status,null,null,FileOperation.Write);
         }else {
@@ -51,6 +61,8 @@ public class FileOpHandler {
                         .filter(Files::isRegularFile)
                         .forEach((str)->files.add(str.toString()));
                 status=true;
+            }catch (IOException e){
+                e.printStackTrace();
             }
             result = new FileOpResult(status,null,files,FileOperation.Enquiry);
         }

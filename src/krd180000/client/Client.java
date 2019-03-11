@@ -15,7 +15,7 @@ public class Client implements Runnable{
     private int totalClients;
     private static final int TOTAL_SERVERS = 3;
     private int port;
-    private int clientId;
+    public final int clientId;
     private MutExRunner mutExRunner;
     private SocketReceiver receiver;
     private Address[] serverIps;
@@ -35,19 +35,27 @@ public class Client implements Runnable{
     public void run(){
         Scanner in = new Scanner(System.in);
         ServerOpHandler opHandler = new ServerOpHandler(serverIps);
+        in.nextInt();
         while (true) {
+            int op = in.nextInt();
+            if(op>2){
+                break;
+            }
             try {
                 mutExRunner.execute(() -> {
-                    int op = in.nextInt();
                     FileOperation operation = FileOperation.Enquiry;
                     if(op==1){
                         operation = FileOperation.Read;
                     }else if(op==2){
                         operation = FileOperation.Write;
                     }
-                    FileOpResult opResult = opHandler.handle(operation,1);
-                    System.out.println("opResult = " + opResult);
-                    System.out.println("opResult = " + opResult);
+                    FileOpResult opResult = null;
+                    try {
+                        opResult = opHandler.handle(operation,1,clientId);
+                        System.out.println("opResult = " + opResult);
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 });
 //                Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -59,9 +67,9 @@ public class Client implements Runnable{
     public static void main(String[] args) throws IOException {
         System.out.println("Client has started");
         System.out.println("Address is : "+getMyIp());
-        Properties properties = PropertyReader.read();
+        Properties properties = PropertyReader.read("src/resources/client.properties");
         int totalClients = Integer.parseInt(properties.getProperty("totalClients"));
-        int currentClientId = Integer.parseInt(properties.getProperty("currentClientId"));
+        int currentClientId = Integer.parseInt(args[0]);
         Address[] clientIps = getIPs(properties,"client",totalClients);
         Address[] serverIps = getIPs(properties,"server",TOTAL_SERVERS);
         Client client = new Client(currentClientId,totalClients,clientIps,serverIps);
