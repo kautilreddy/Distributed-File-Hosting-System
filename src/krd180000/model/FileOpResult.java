@@ -2,27 +2,26 @@ package krd180000.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 public class FileOpResult implements Serializable {
-    private boolean status;
+    private boolean success;
     private String str;
     private ArrayList<String> files;
     private FileOperation operation;
 
-    public FileOpResult(boolean status, String str, ArrayList<String> files, FileOperation operation) {
-        this.status = status;
+    public FileOpResult(boolean success, String str, ArrayList<String> files, FileOperation operation) {
+        this.success = success;
         this.str = str;
         this.files = files;
         this.operation = operation;
     }
 
-    public boolean isStatus() {
-        return status;
+    public boolean isSuccess() {
+        return success;
     }
 
-    public void setStatus(boolean status) {
-        this.status = status;
+    public void setSuccess(boolean success) {
+        this.success = success;
     }
 
     public String getStr() {
@@ -47,5 +46,22 @@ public class FileOpResult implements Serializable {
 
     public void setOperation(FileOperation operation) {
         this.operation = operation;
+    }
+
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("\nStatus: ");
+        sb.append(success);
+        if(!success){
+            return sb.toString();
+        }
+        sb.append("\n");
+        if(operation==FileOperation.Read) {
+            sb.append(str);
+        }else if(operation==FileOperation.Enquiry) {
+            sb.append(String.join(", ",files));
+        }
+        return sb.toString();
     }
 }

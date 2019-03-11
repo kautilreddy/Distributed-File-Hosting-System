@@ -36,11 +36,18 @@ public class Client implements Runnable{
         Scanner in = new Scanner(System.in);
         ServerOpHandler opHandler = new ServerOpHandler(serverIps);
         while (true) {
-            int op = in.nextInt();
             try {
                 mutExRunner.execute(() -> {
-                    FileOpResult opResult = opHandler.handle(FileOperation.Read,1);
-
+                    int op = in.nextInt();
+                    FileOperation operation = FileOperation.Enquiry;
+                    if(op==1){
+                        operation = FileOperation.Read;
+                    }else if(op==2){
+                        operation = FileOperation.Write;
+                    }
+                    FileOpResult opResult = opHandler.handle(operation,1);
+                    System.out.println("opResult = " + opResult);
+                    System.out.println("opResult = " + opResult);
                 });
 //                Thread.sleep(1000);
             } catch (InterruptedException e) {
