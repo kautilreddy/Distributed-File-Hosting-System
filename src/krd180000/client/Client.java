@@ -2,10 +2,13 @@ package krd180000.client;
 
 import krd180000.common.PropertyReader;
 import krd180000.model.Address;
+import krd180000.model.FileOpResult;
+import krd180000.model.FileOperation;
 
 import java.io.IOException;
 import java.net.*;
 import java.util.Properties;
+import java.util.Scanner;
 
 public class Client implements Runnable{
     private MessageHandler messageHandler;
@@ -15,36 +18,29 @@ public class Client implements Runnable{
     private int clientId;
     private MutExRunner mutExRunner;
     private SocketReceiver receiver;
+    private Address[] serverIps;
 
-    public Client(int clientId,int totalClients,Address[] clientIps) throws IOException {
+    public Client(int clientId,int totalClients,Address[] clientIps,Address[] serverIps) throws IOException {
         this.clientId = clientId;
         this.totalClients = totalClients;
         this.messageHandler = new MessageHandler(clientIps);
         this.port = clientIps[clientId].getPort();
         this.mutExRunner = new MutExRunner(clientId,totalClients,port,messageHandler);
         this.receiver = new SocketReceiver(mutExRunner,port,messageHandler);
+        this.serverIps = serverIps;
         receiver.start();
     }
 
     @Override
     public void run(){
-        if(clientId==3){
-            return;
-        }
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        for (int i = 0; i < 10; i++) {
+        Scanner in = new Scanner(System.in);
+        ServerOpHandler opHandler = new ServerOpHandler(serverIps);
+        while (true) {
+            int op = in.nextInt();
             try {
-                mutExRunner.execute(()->{
-                    System.out.println(clientId+" is in critical section @"+System.currentTimeMillis());
-                    try {
-                        Thread.sleep(1123);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                mutExRunner.execute(() -> {
+                    FileOpResult opResult = opHandler.handle(FileOperation.Read,1);
+
                 });
 //                Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -59,8 +55,9 @@ public class Client implements Runnable{
         Properties properties = PropertyReader.read();
         int totalClients = Integer.parseInt(properties.getProperty("totalClients"));
         int currentClientId = Integer.parseInt(properties.getProperty("currentClientId"));
-        Address[] clientIps = getIPs(properties,"client",totalClients,currentClientId);
-        Client client = new Client(currentClientId,totalClients,clientIps);
+        Address[] clientIps = getIPs(properties,"client",totalClients);
+        Address[] serverIps = getIPs(properties,"server",TOTAL_SERVERS);
+        Client client = new Client(currentClientId,totalClients,clientIps,serverIps);
         new Thread(client).start();
     }
 
@@ -74,7 +71,7 @@ public class Client implements Runnable{
         }
         return ip;
     }
-    private static Address[] getIPs(Properties properties,String keyPrefix,int totalCount,int currentId){
+    private static Address[] getIPs(Properties properties,String keyPrefix,int totalCount){
         Address[] ips = new Address[totalCount+1];
         for (int i = 1; i <= totalCount; i++) {
             int port = Integer.parseInt(properties.getProperty(keyPrefix+i+"_port"));
