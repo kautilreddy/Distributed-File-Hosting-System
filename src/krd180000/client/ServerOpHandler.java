@@ -19,6 +19,9 @@ public class ServerOpHandler {
     }
 
     public FileOpResult handle(FileOperation op,int toServer,int fromClient) throws IOException, ClassNotFoundException {
+        if(op == FileOperation.Write){
+            return handleWrite(fromClient);
+        }
         FileOpResult result= null;
         FileOpMessage opMessage = new FileOpMessage(op,"test.txt",fromClient+"@"+System.currentTimeMillis()+"\n");
         Socket socket = new Socket(serverIps[toServer].getIp(),serverIps[toServer].getPort());
@@ -27,13 +30,20 @@ public class ServerOpHandler {
         ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
         Object o = ois.readObject();
         result = (FileOpResult) o;
-//        if(op== FileOperation.Read){
-//            result = new FileOpResult(true,"You suck",null,FileOperation.Read);
-//        }else if (op == FileOperation.Write){
-//            result = result = new FileOpResult(true,null,null,FileOperation.Write);
-//        }else {
-//            result = result = new FileOpResult(true,null,new ArrayList<>(),FileOperation.Enquiry);
-//        }
+        return result;
+    }
+    public FileOpResult handleWrite(int fromClient) throws IOException, ClassNotFoundException {
+        FileOpResult result = null;
+        String message = fromClient+"@"+System.currentTimeMillis()+"\n";
+        for (int i = 1; i <= Client.TOTAL_SERVERS; i++) {
+            FileOpMessage opMessage = new FileOpMessage(FileOperation.Write,"test.txt",message);
+            Socket socket = new Socket(serverIps[i].getIp(),serverIps[i].getPort());
+            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+            oos.writeObject(opMessage);
+            ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+            Object o = ois.readObject();
+            result = (FileOpResult) o;
+        }
         return result;
     }
 }

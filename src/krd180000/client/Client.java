@@ -7,57 +7,80 @@ import krd180000.model.FileOperation;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Client implements Runnable{
     private MessageHandler messageHandler;
     private int totalClients;
-    private static final int TOTAL_SERVERS = 3;
+    public static final int TOTAL_SERVERS = 3;
     private int port;
     public final int clientId;
-    private MutExRunner mutExRunner;
+    private List<String> files;
+    private MutExRunnerStore mutExRunnerStore;
     private SocketReceiver receiver;
     private Address[] serverIps;
+    private Random random;
 
     public Client(int clientId,int totalClients,Address[] clientIps,Address[] serverIps) throws IOException {
         this.clientId = clientId;
         this.totalClients = totalClients;
         this.messageHandler = new MessageHandler(clientIps);
         this.port = clientIps[clientId].getPort();
-        this.mutExRunner = new MutExRunner(clientId,totalClients,port,messageHandler);
-        this.receiver = new SocketReceiver(mutExRunner,port,messageHandler);
-        this.serverIps = serverIps;
+        this.mutExRunnerStore = new MutExRunnerStore(clientId,totalClients,messageHandler);
+        this.receiver = new SocketReceiver(mutExRunnerStore,port,messageHandler);
         receiver.start();
+        this.serverIps = serverIps;
+        random = new Random();
     }
 
     @Override
     public void run(){
         Scanner in = new Scanner(System.in);
         ServerOpHandler opHandler = new ServerOpHandler(serverIps);
-        in.nextInt();
+        try {
+            FileOpResult opResult = opHandler.handle(FileOperation.Enquiry,1,clientId);
+            files = opResult.getFiles();
+            mutExRunnerStore.init(files);
+        } catch (IOException|ClassNotFoundException|RuntimeException e) {
+            System.out.println("Init failed!");
+            receiver.interrupt();
+            e.printStackTrace();
+        }
+        System.out.println("Enter: ");
+        System.out.println("\t Read file ");
         while (true) {
+            String file = files.get(random.nextInt(files.size()));
             int op = in.nextInt();
             if(op>2){
                 break;
             }
             try {
-                mutExRunner.execute(() -> {
-                    FileOperation operation = FileOperation.Enquiry;
+                if(op==0){
+                    try {
+                        FileOpResult opResult = opHandler.handle(FileOperation.Enquiry,1,clientId);
+                        System.out.println("Result = " + opResult);
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    continue;
+                }
+                mutExRunnerStore.getMutexRunnerFor(file).execute(() -> {
+                    FileOperation operation = FileOperation.Write;
                     if(op==1){
                         operation = FileOperation.Read;
-                    }else if(op==2){
-                        operation = FileOperation.Write;
                     }
                     FileOpResult opResult = null;
                     try {
-                        opResult = opHandler.handle(operation,1,clientId);
-                        System.out.println("opResult = " + opResult);
+                        int toServer = 1 + random.nextInt(3);
+                        opResult = opHandler.handle(operation,toServer,clientId);
+                        System.out.println("Result = " + opResult);
                     } catch (IOException | ClassNotFoundException e) {
                         e.printStackTrace();
                     }
                 });
-//                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

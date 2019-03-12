@@ -15,16 +15,17 @@ public class MutExRunner{
     private boolean requestingCriticalSection;
     private boolean[] deferredReply;
     private boolean[] shouldIRequest;
-    public MutExRunner(int me, int n, int port,MessageHandler messageHandler) throws IOException {
+    private String forFile;
+    public MutExRunner(int me, int n, MessageHandler messageHandler,String forFile){
         this.me = me;
         N = n;
         sequenceNumber = 0;
         highestSequenceNumber = 0;
-//        this.serverSocket = new ServerSocket(port);
         this.deferredReply = new boolean[N+1];
         this.shouldIRequest = new boolean[N+1];
         Arrays.fill(shouldIRequest,true);
         this.messageHandler = messageHandler;
+        this.forFile = forFile;
     }
 
     public void execute(Runnable criticalCode) throws InterruptedException {
@@ -43,7 +44,7 @@ public class MutExRunner{
                         continue;
                     }
                 }
-                messageHandler.sendRequest(me,i,sequenceNumber);
+                messageHandler.sendRequest(me,i,sequenceNumber,forFile);
             }
         }
         synchronized (Lock.getLockObject()) {
@@ -71,7 +72,7 @@ public class MutExRunner{
         synchronized (Lock.getLockObject()){
             shouldIRequest[toProcess] = true;
         }
-        messageHandler.sendReply(me,toProcess);
+        messageHandler.sendReply(me,toProcess,forFile);
     }
 
     public int getHighestSequenceNumber() {

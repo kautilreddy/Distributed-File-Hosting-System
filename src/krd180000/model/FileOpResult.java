@@ -51,8 +51,10 @@ public class FileOpResult implements Serializable {
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder();
+        sb.append("\n");
+        sb.append(operation.name());
         sb.append("\nStatus: ");
-        sb.append(success);
+        sb.append(success?"Successful":"Failed");
         if(!success){
             return sb.toString();
         }

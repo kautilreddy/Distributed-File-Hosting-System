@@ -6,14 +6,16 @@ public class Message implements Serializable {
     private MessageType type;
     private int sequenceNumber;
     private int fromProcess;
+    private String forFile;
 
-    public Message(MessageType type, int sequenceNumber, int fromProcess) {
+    public Message(MessageType type, int sequenceNumber, int fromProcess,String forFile) {
         this.type = type;
         this.sequenceNumber = sequenceNumber;
         this.fromProcess = fromProcess;
+        this.forFile = forFile;
     }
-    public Message(MessageType type,int fromProcess){
-        this(type,-1,fromProcess);
+    public Message(MessageType type,int fromProcess,String forFile){
+        this(type,-1,fromProcess,forFile);
     }
 
     public MessageType getType() {
@@ -38,6 +40,14 @@ public class Message implements Serializable {
 
     public void setFromProcess(int fromProcess) {
         this.fromProcess = fromProcess;
+    }
+
+    public String getForFile() {
+        return forFile;
+    }
+
+    public void setForFile(String forFile) {
+        this.forFile = forFile;
     }
 }
 

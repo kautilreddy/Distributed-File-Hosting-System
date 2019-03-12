@@ -11,10 +11,10 @@ import java.net.Socket;
 public class SocketReceiver extends Thread{
     private MessageHandler messageHandler;
     private ServerSocket serverSocket;
-    private MutExRunner mutExRunner;
+    private MutExRunnerStore mutExRunnerStore;
 
-    public SocketReceiver(MutExRunner mutExRunner,int port,MessageHandler messageHandler) throws IOException {
-        this.mutExRunner = mutExRunner;
+    public SocketReceiver(MutExRunnerStore mutExRunnerStore,int port,MessageHandler messageHandler) throws IOException {
+        this.mutExRunnerStore = mutExRunnerStore;
         this.serverSocket = new ServerSocket(port);
         this.messageHandler = messageHandler;
     }
@@ -28,7 +28,7 @@ public class SocketReceiver extends Thread{
                 ObjectInputStream stream = new ObjectInputStream(inputStream);
                 Object messageObj = stream.readObject();
                 Message message = (Message) messageObj;
-                new RequestHandler(message,mutExRunner,messageHandler).start();
+                new RequestHandler(message, mutExRunnerStore.getMutexRunnerFor(message.getForFile()),messageHandler).start();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

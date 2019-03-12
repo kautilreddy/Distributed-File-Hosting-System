@@ -30,13 +30,13 @@ public class MessageHandler {
             throw new RuntimeException(e);
         }
     }
-    public void sendReply(int fromProcess,int toProcess){
+    public void sendReply(int fromProcess,int toProcess,String forFile){
         System.out.println("Sending reply to "+toProcess);
-        sendMessage(toProcess,new Message(MessageType.Reply,fromProcess));
+        sendMessage(toProcess,new Message(MessageType.Reply,fromProcess,forFile));
     }
 
-    public void sendRequest(int fromProcess, int toProcess,int seqNumber){
+    public void sendRequest(int fromProcess, int toProcess,int seqNumber,String forFile){
         System.out.println("Sending request to "+toProcess+" "+seqNumber);
-        sendMessage(toProcess,new Message(MessageType.Request, seqNumber, fromProcess));
+        sendMessage(toProcess,new Message(MessageType.Request, seqNumber, fromProcess,forFile));
     }
 }
