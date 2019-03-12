@@ -50,7 +50,10 @@ public class Client implements Runnable{
             e.printStackTrace();
         }
         System.out.println("Enter: ");
-        System.out.println("\t Read file ");
+        System.out.println("\t Enquiry files 0");
+        System.out.println("\t Read file 1");
+        System.out.println("\t Write file 2");
+        System.out.println("\t Exit anything else");
         while (true) {
             String file = files.get(random.nextInt(files.size()));
             int op = in.nextInt();
