@@ -93,7 +93,7 @@ public class Client implements Runnable{
     public static void main(String[] args) throws IOException {
         System.out.println("Client has started");
         System.out.println("Address is : "+getMyIp());
-        Properties properties = PropertyReader.read("src/resources/client.properties");
+        Properties properties = PropertyReader.read(args[1]);
         int totalClients = Integer.parseInt(properties.getProperty("totalClients"));
         int currentClientId = Integer.parseInt(args[0]);
         Address[] clientIps = getIPs(properties,"client",totalClients);

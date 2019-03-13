@@ -32,7 +32,7 @@ public class Server extends Thread{
 
     public static void main(String[] args) throws IOException{
         int serverNumber = Integer.valueOf(args[0]);
-        Properties properties = PropertyReader.read("src/resources/server.properties");
+        Properties properties = PropertyReader.read(args[1]);
         new Server(properties.getProperty("server"+serverNumber+"_storagePath")
                 ,Integer.parseInt(properties.getProperty("server"+serverNumber+"_port")), serverNumber).start();
     }
