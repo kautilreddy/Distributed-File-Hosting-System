@@ -41,7 +41,7 @@ public class Client implements Runnable{
         Scanner in = new Scanner(System.in);
         ServerOpHandler opHandler = new ServerOpHandler(serverIps);
         try {
-            FileOpResult opResult = opHandler.handle(FileOperation.Enquiry,1,clientId);
+            FileOpResult opResult = opHandler.handle(FileOperation.Enquiry,1,clientId,null);
             files = opResult.getFiles();
             mutExRunnerStore.init(files);
         } catch (IOException|ClassNotFoundException|RuntimeException e) {
@@ -49,21 +49,18 @@ public class Client implements Runnable{
             receiver.interrupt();
             e.printStackTrace();
         }
-        System.out.println("Enter: ");
-        System.out.println("\t Enquiry files 0");
-        System.out.println("\t Read file 1");
-        System.out.println("\t Write file 2");
-        System.out.println("\t Exit anything else");
+        System.out.println("Client Initialized press any key to start");
+        in.nextLine();
         while (true) {
             String file = files.get(random.nextInt(files.size()));
-            int op = in.nextInt();
+            int op = random.nextInt(3);
             if(op>2){
                 break;
             }
             try {
                 if(op==0){
                     try {
-                        FileOpResult opResult = opHandler.handle(FileOperation.Enquiry,1,clientId);
+                        FileOpResult opResult = opHandler.handle(FileOperation.Enquiry,1,clientId,file);
                         System.out.println("Result = " + opResult);
                     } catch (IOException | ClassNotFoundException e) {
                         e.printStackTrace();
@@ -78,12 +75,13 @@ public class Client implements Runnable{
                     FileOpResult opResult = null;
                     try {
                         int toServer = 1 + random.nextInt(3);
-                        opResult = opHandler.handle(operation,toServer,clientId);
+                        opResult = opHandler.handle(operation,toServer,clientId,file);
                         System.out.println("Result = " + opResult);
                     } catch (IOException | ClassNotFoundException e) {
                         e.printStackTrace();
                     }
                 });
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

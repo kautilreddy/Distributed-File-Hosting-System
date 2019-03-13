@@ -18,12 +18,12 @@ public class ServerOpHandler {
         this.serverIps = serverIps;
     }
 
-    public FileOpResult handle(FileOperation op,int toServer,int fromClient) throws IOException, ClassNotFoundException {
+    public FileOpResult handle(FileOperation op,int toServer,int fromClient,String fileName) throws IOException, ClassNotFoundException {
         if(op == FileOperation.Write){
-            return handleWrite(fromClient);
+            return handleWrite(fromClient,fileName);
         }
         FileOpResult result= null;
-        FileOpMessage opMessage = new FileOpMessage(op,"test.txt",fromClient+"@"+System.currentTimeMillis()+"\n");
+        FileOpMessage opMessage = new FileOpMessage(op,fileName,fromClient+"@"+System.currentTimeMillis()+"\n");
         Socket socket = new Socket(serverIps[toServer].getIp(),serverIps[toServer].getPort());
         ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
         oos.writeObject(opMessage);
@@ -32,17 +32,18 @@ public class ServerOpHandler {
         result = (FileOpResult) o;
         return result;
     }
-    public FileOpResult handleWrite(int fromClient) throws IOException, ClassNotFoundException {
+    public FileOpResult handleWrite(int fromClient,String fileName) throws IOException, ClassNotFoundException {
         FileOpResult result = null;
         String message = fromClient+"@"+System.currentTimeMillis()+"\n";
         for (int i = 1; i <= Client.TOTAL_SERVERS; i++) {
-            FileOpMessage opMessage = new FileOpMessage(FileOperation.Write,"test.txt",message);
+            FileOpMessage opMessage = new FileOpMessage(FileOperation.Write,fileName,message);
             Socket socket = new Socket(serverIps[i].getIp(),serverIps[i].getPort());
             ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
             oos.writeObject(opMessage);
             ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
             Object o = ois.readObject();
             result = (FileOpResult) o;
+            socket.close();
         }
         return result;
     }

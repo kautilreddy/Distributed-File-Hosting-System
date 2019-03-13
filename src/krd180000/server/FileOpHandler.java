@@ -59,7 +59,7 @@ public class FileOpHandler {
             try (Stream<Path> paths = Files.walk(Paths.get(storagePath))) {
                 paths
                         .filter(Files::isRegularFile)
-                        .forEach((str)->files.add(str.toString()));
+                        .forEach((str)->files.add(str.getFileName().toString()));
                 status=true;
             }catch (IOException e){
                 e.printStackTrace();
